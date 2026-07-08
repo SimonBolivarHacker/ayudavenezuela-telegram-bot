@@ -9,7 +9,7 @@ DESAPARECIDOS_API_URL = (
 ).rstrip("/")
 
 WEB_PUBLIC_URL = (
-    os.getenv("WEB_PUBLIC_URL") or "https://busqueda.ayudavenezuela.online"
+    os.getenv("WEB_PUBLIC_URL") or "https://ayudavenezuela.online"
 ).rstrip("/")
 
 TG_MODE = os.getenv("TG_MODE", "polling").lower()

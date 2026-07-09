@@ -3,6 +3,7 @@ import logging
 from html import escape
 
 from aiogram import F, Router
+from aiogram.enums import ChatType
 from aiogram.filters import Command, CommandObject, CommandStart
 from aiogram.types import (
     BufferedInputFile,
@@ -134,17 +135,19 @@ async def on_ficha(cb: CallbackQuery, api: DesaparecidosAPI, limiter: RateLimite
         return
 
     text = formatting.render_ficha(detail)
-    # Web App: la ficha se abre dentro de Telegram (webview), sin sacar a la persona
-    # de la app. En móvil la página se carga como documento de primer nivel dentro
-    # del webview, así que la cookie de sesión SameSite=Strict de la web viaja bien.
-    # (En Telegram Desktop/Web la Mini App va en iframe y esa cookie podría no
-    # enviarse; verificar en móvil, que es el caso de uso principal.)
-    kb = InlineKeyboardMarkup(inline_keyboard=[[
-        InlineKeyboardButton(
+    ficha_link = formatting.ficha_url(uid)
+    if cb.message.chat.type == ChatType.PRIVATE:
+        # Web App: la ficha se abre dentro de Telegram (webview), sin sacar a la
+        # persona de la app.
+        boton = InlineKeyboardButton(
             text="🌐 Ver ficha completa",
-            web_app=WebAppInfo(url=formatting.ficha_url(uid)),
-        ),
-    ]])
+            web_app=WebAppInfo(url=ficha_link),
+        )
+    else:
+        # web_app solo es válido en chats privados; en grupos Telegram
+        # responde BUTTON_TYPE_INVALID, así que usamos un botón de URL normal.
+        boton = InlineKeyboardButton(text="🌐 Ver ficha completa", url=ficha_link)
+    kb = InlineKeyboardMarkup(inline_keyboard=[[boton]])
 
     photo = await api.fetch_photo(detail.get("foto"))
     if photo and len(text) <= _CAPTION_MAX:

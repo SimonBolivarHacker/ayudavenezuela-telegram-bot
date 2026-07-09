@@ -10,7 +10,6 @@ from aiogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
-    WebAppInfo,
 )
 
 from . import config, formatting
@@ -134,14 +133,14 @@ async def on_ficha(cb: CallbackQuery, api: DesaparecidosAPI, limiter: RateLimite
         return
 
     text = formatting.render_ficha(detail)
-    # Web App: la ficha se abre dentro de Telegram (webview), sin sacar a la
-    # persona de la app. Requiere URL https (la tenemos) y solo funciona en
-    # botones inline de chats privados, que es como se usa este bot.
+    # Botón de URL normal (no Web App/Mini App): en móvil Telegram lo abre en su
+    # navegador interno (webview), sin sacar a la persona de la app. Se prefiere a
+    # una Mini App porque la web ata su API a una sesión con cookie SameSite=Strict,
+    # que el navegador NO envía en el contexto embebido de una Mini App -> la ficha
+    # no cargaría (pantalla en negro). El navegador interno es primera-parte y sí
+    # manda la cookie.
     kb = InlineKeyboardMarkup(inline_keyboard=[[
-        InlineKeyboardButton(
-            text="🌐 Ver ficha completa",
-            web_app=WebAppInfo(url=formatting.ficha_url(uid)),
-        ),
+        InlineKeyboardButton(text="🌐 Ver ficha completa", url=formatting.ficha_url(uid)),
     ]])
 
     photo = await api.fetch_photo(detail.get("foto"))

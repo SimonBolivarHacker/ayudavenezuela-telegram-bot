@@ -121,6 +121,15 @@ async def on_page(cb: CallbackQuery):
     await cb.answer()
 
 
+def _link_button(text: str, url: str, chat_type: str) -> InlineKeyboardButton:
+    """Botón que abre una URL. En chats privados usa Web App (webview dentro de
+    Telegram); en grupos usa un botón de URL normal, porque `web_app` solo es
+    válido en privados (Telegram responde BUTTON_TYPE_INVALID en grupos)."""
+    if chat_type == ChatType.PRIVATE:
+        return InlineKeyboardButton(text=text, web_app=WebAppInfo(url=url))
+    return InlineKeyboardButton(text=text, url=url)
+
+
 @router.callback_query(F.data.startswith("ficha:"))
 async def on_ficha(cb: CallbackQuery, api: DesaparecidosAPI, limiter: RateLimiter):
     if not limiter.allow(cb.from_user.id):
@@ -135,19 +144,12 @@ async def on_ficha(cb: CallbackQuery, api: DesaparecidosAPI, limiter: RateLimite
         return
 
     text = formatting.render_ficha(detail)
-    ficha_link = formatting.ficha_url(uid)
-    if cb.message.chat.type == ChatType.PRIVATE:
-        # Web App: la ficha se abre dentro de Telegram (webview), sin sacar a la
-        # persona de la app.
-        boton = InlineKeyboardButton(
-            text="🌐 Ver ficha completa",
-            web_app=WebAppInfo(url=ficha_link),
-        )
-    else:
-        # web_app solo es válido en chats privados; en grupos Telegram
-        # responde BUTTON_TYPE_INVALID, así que usamos un botón de URL normal.
-        boton = InlineKeyboardButton(text="🌐 Ver ficha completa", url=ficha_link)
-    kb = InlineKeyboardMarkup(inline_keyboard=[[boton]])
+    chat_type = cb.message.chat.type
+    reportar_link = formatting.reportar_url(uid, detail.get("nombre_completo"))
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [_link_button("🌐 Ver ficha completa", formatting.ficha_url(uid), chat_type)],
+        [_link_button("✅ Reportar como localizada", reportar_link, chat_type)],
+    ])
 
     photo = await api.fetch_photo(detail.get("foto"))
     if photo and len(text) <= _CAPTION_MAX:

@@ -4,7 +4,6 @@ UX pensada para familiares en situación de estrés: cálida, clara y concisa.
 No se vuelca información interna (grafos, scores, ids) ni se sobrecarga al usuario.
 """
 from html import escape
-from urllib.parse import urlencode
 
 from . import config
 
@@ -109,13 +108,7 @@ def ficha_url(uid: str) -> str:
     return f"{config.WEB_PUBLIC_URL}/?uid={uid}"
 
 
-def reportar_url(uid: str, nombre: str | None = None) -> str:
-    """Formulario para reportar a una persona como localizada.
-
-    Preselecciona el tipo «encontrado» y precarga el nombre para que el familiar
-    no reescriba nada; lleva el uid para poder rastrear a qué ficha se refiere.
-    """
-    params = {"tipo": "encontrado", "uid": uid}
-    if nombre:
-        params["nombre"] = nombre
-    return f"{config.WEB_PUBLIC_URL}/reportar.html?{urlencode(params)}"
+def reportar_url() -> str:
+    """Formulario para reportar a una persona como localizada. Por ahora solo
+    abre el form; más adelante se puede enlazar a una ficha con parámetros."""
+    return f"{config.WEB_PUBLIC_URL}/reportar.html"

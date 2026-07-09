@@ -145,10 +145,9 @@ async def on_ficha(cb: CallbackQuery, api: DesaparecidosAPI, limiter: RateLimite
 
     text = formatting.render_ficha(detail)
     chat_type = cb.message.chat.type
-    reportar_link = formatting.reportar_url(uid, detail.get("nombre_completo"))
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [_link_button("🌐 Ver ficha completa", formatting.ficha_url(uid), chat_type)],
-        [_link_button("✅ Reportar como localizada", reportar_link, chat_type)],
+        [_link_button("✅ Reportar como localizada", formatting.reportar_url(), chat_type)],
     ])
 
     photo = await api.fetch_photo(detail.get("foto"))

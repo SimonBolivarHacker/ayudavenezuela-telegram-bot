@@ -95,7 +95,7 @@ def render_ficha(detail: dict) -> str:
     if any(c.get("estado_operativo") in ("encontrado", "hospitalizado") for c in conns):
         lines.append(
             "\n⚠️ <b>Posible coincidencia con un caso ya localizado.</b> "
-            "Revisa la ficha completa en la web."
+            "Abre la ficha completa para revisar."
         )
 
     lines.append(
@@ -105,7 +105,14 @@ def render_ficha(detail: dict) -> str:
 
 
 def ficha_url(uid: str) -> str:
+    """Ficha pública en la web (navegador)."""
     return f"{config.WEB_PUBLIC_URL}/?uid={uid}"
+
+
+def ficha_mini_url(uid: str) -> str:
+    """Mini App de ficha completa (Telegram): detalle amigable con navegación
+    entre personas relacionadas."""
+    return f"{config.WEB_PUBLIC_URL}/ficha-mini.html?uid={uid}&src=telegram"
 
 
 def reportar_url(uid: str | None = None) -> str:

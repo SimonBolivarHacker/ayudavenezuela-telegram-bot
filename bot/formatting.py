@@ -108,7 +108,10 @@ def ficha_url(uid: str) -> str:
     return f"{config.WEB_PUBLIC_URL}/?uid={uid}"
 
 
-def reportar_url() -> str:
-    """Formulario para reportar a una persona como localizada. Por ahora solo
-    abre el form; más adelante se puede enlazar a una ficha con parámetros."""
-    return f"{config.WEB_PUBLIC_URL}/reportar.html"
+def reportar_url(uid: str | None = None) -> str:
+    """Mini App de reporte (Telegram). Con `uid` pre-carga la ficha para reportar
+    a esa persona como localizada; sin `uid`, formulario de persona perdida."""
+    base = f"{config.WEB_PUBLIC_URL}/reportar-mini.html?src=telegram"
+    if uid:
+        return f"{base}&uid={uid}&tipo=encontrado"
+    return f"{base}&tipo=desaparecido"

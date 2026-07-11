@@ -30,7 +30,8 @@ WELCOME = (
     "🕊️ <b>Buscador de personas desaparecidas — Venezuela</b>\n\n"
     "Escríbeme el <b>nombre y apellido</b>, o la <b>cédula</b>, de la persona que "
     "estás buscando y te muestro las fichas que tenemos registradas.\n\n"
-    "También puedes usar <code>/buscar &lt;nombre&gt;</code>."
+    "• <code>/buscar &lt;nombre&gt;</code> — buscar una persona\n"
+    "• <code>/reportar</code> — reportar a una persona perdida"
 )
 
 
@@ -130,6 +131,19 @@ def _link_button(text: str, url: str, chat_type: str) -> InlineKeyboardButton:
     return InlineKeyboardButton(text=text, url=url)
 
 
+@router.message(Command("reportar"))
+async def on_reportar(message: Message):
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [_link_button("📝 Reportar persona perdida", formatting.reportar_url(), message.chat.type)],
+    ])
+    await message.answer(
+        "Para reportar a una persona <b>perdida</b>, abre el formulario y complétalo. "
+        "Un coordinador revisará el reporte. 🙏\n\n"
+        "Si ya sabes que alguien <b>fue localizado</b>, búscalo con su nombre y usa "
+        "«✅ Reportar como localizada» en su ficha.",
+        reply_markup=kb)
+
+
 @router.callback_query(F.data.startswith("ficha:"))
 async def on_ficha(cb: CallbackQuery, api: DesaparecidosAPI, limiter: RateLimiter):
     if not limiter.allow(cb.from_user.id):
@@ -147,7 +161,7 @@ async def on_ficha(cb: CallbackQuery, api: DesaparecidosAPI, limiter: RateLimite
     chat_type = cb.message.chat.type
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [_link_button("🌐 Ver ficha completa", formatting.ficha_url(uid), chat_type)],
-        [_link_button("✅ Reportar como localizada", formatting.reportar_url(), chat_type)],
+        [_link_button("✅ Reportar como localizada", formatting.reportar_url(uid), chat_type)],
     ])
 
     photo = await api.fetch_photo(detail.get("foto"))
